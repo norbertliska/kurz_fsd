@@ -1,7 +1,8 @@
+require('dotenv').config()
 const express = require('express') 
 const app = express() 
     app.get('/', function (req, res) { 
-    res.send('Hello World!') 
+    res.send('Hello World! ' + (new Date()) ) 
 }) 
-app.listen(3000)
+app.listen(process.env.PORT, process.env.HOST)
 
