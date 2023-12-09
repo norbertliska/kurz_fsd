@@ -21,11 +21,12 @@ GET /categories
 ```
 GET /articles/{id}
 GET /articles?page=3&perPage=25
-GET /articles?afterId=1234&page=3&perPage=25
-GET /articles?userId=2&page=3&perPage=25
-GET /articles?userId=2&afterId=1234&page=3&perPage=25
+GET /articles?afterId=1234&limit=20
+GET /articles?authorId=2&page=3&perPage=25
+GET /articles?authorId=2&afterId=1234&limit=20
 GET /articles?categoryId=101&page=3&perPage=25
-GET /articles?categoryId=101&afterId=1234&page=3&perPage=25
+GET /articles?categoryId=101&afterId=1234&limit=20
+POST /articles/filter
 ```
 
 
