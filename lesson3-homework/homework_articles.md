@@ -134,7 +134,7 @@ Ako "GET /articles?page=3&perPage=25"s
 - **titleContains**: Titulok obsahuje... Ak je undefined alebo null alebo "" -> ignoruje sa
 - **contentContains**: Content obsahuje... Ak je undefined alebo null alebo  "" -> ignoruje sa
 - **tags**: Ak undefined alebo null alebo length = 0 -> ignoruje sa
-- **datetimeFrom**, **datetimeTo**: ak je undefined alebo null alebo "" -> ignoruje sa
+- **publishedFrom**, **publishedTo**: ak je undefined alebo null alebo "" -> ignoruje sa
 
 ```
 Content/Payload {
@@ -145,8 +145,8 @@ Content/Payload {
     [optional] titleContains: string,
     [optional] contentContains: string, // search celý content
     [optional] tags: string[],
-    [optional] datetimeFrom,
-    [optional] datetimeTo,
+    [optional] publishedFrom,
+    [optional] publishedTo,
     page:int,
     perPage: int
 }
