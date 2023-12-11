@@ -42,7 +42,7 @@ app.use(bodyParser.json())
 
 /**
  * [in] content { username:"xxx", password: "yyy"}
- * [out] HTTP 200 { id:<userId>, role:[], token:jwttoken }
+ * [out] HTTP 200 { id:<userId>, token:jwttoken }
  * [out] HTTP 401 { error: "zle meno alebo heslo" }
  */
 app.post("/login", (req, res) => {
@@ -79,7 +79,7 @@ const authMiddleware = (req, res, next) => {
         res.send( { error: "Ziadna alebo chybna authentifikacia", detail: detail });    
     }
 
-    if (authHeader == void 0) { generError("Chýba authentifikacnz header"); return; }
+    if (authHeader == void 0) { generError("Chýba authentifikacny header"); return; }
 
     // ideme vyparsovat token, cize z "bearer xxx" -> "xxx"
     const parts = authHeader.trim().split(" ");
@@ -90,14 +90,12 @@ const authMiddleware = (req, res, next) => {
         const payload = jwt.verify(parts[1], SECRET_KEY)        
         // konecne to co toto middleWare malo za ulohu
         req.user = payload; // TADAAA!!!
+        next();    
     }
     catch(e) {
          generError("Nepreslo verify: " + e); 
          return; 
-    }        
-
-    next();    
-
+    }
 }
 
 
@@ -133,16 +131,16 @@ app.post("/profile", [authMiddleware], (req, res) => {
 
 /**
  * Zobranie profilu usera podla id, cize zvycajne ineho ako je prihlasny, ale moze byt aj ten co je prihlaseny
- * [in] /profile alebo /profile?full
+ * [in] /user/3/profile alebo /user/3/profile?full
  * Ak chceme profil ineho ako prihlaseneho usera, tak prihlaseny user musi mat rolu ROLE_VIEW_USER_PROFILE!
  * [out] user-infos pre usera podla id
- * [out] 403 ze nema ROLE_VIEW_USER_PROFILE
+ * [out] 403 ze prihlaseny user nema ROLE_VIEW_USER_PROFILE
  * [out] 412 zly format ID-cka
  */
 app.post("/user/:id/profile", [authMiddleware], (req, res) => {        
     // stav: 
     const authUserPayload = req.user; // tento je prihlaseny. Pozor! Nie cely user, ale len payload, cize len {id, username, role}
-    const id = parseInt(req.params.id); // tohoto profil chceme ukazat
+    const id = parseInt(req.params.id); // profil tohoto usera chceme ukazat
     if (isNaN(id)) { 
         res.status(412);
         res.send({ error: "ID nie je cislo"}); 
@@ -151,6 +149,7 @@ app.post("/user/:id/profile", [authMiddleware], (req, res) => {
 
     if (id !== authUserPayload.id) {
         // ak chceme profil ineho ako prihlaseneho usera, prihlaseny user musi mat rolu ROLE_VIEW_USER_PROFILE
+        // Kedze roli su v payloade, nemusime otravovat userService
         if (authUserPayload.role.indexOf(ROLE_VIEW_USER_PROFILE) < 0) {
             res.status(403);
             res.send({error: `Na zobrazenie cudzieho profilu musi mat prihlaseny user rolu ${ROLE_VIEW_USER_PROFILE}`});
@@ -193,7 +192,6 @@ app.post("/user/:id/profile", [authMiddleware], (req, res) => {
  * [in] /categories
  */
 app.get("/categories", (req, res) => {
-    res.status(404);
     res.send([
         {
             id:100,
@@ -216,5 +214,5 @@ app.get("/categories", (req, res) => {
 
 
 app.listen(3000, () => {
-    console.log("Server is running on ....");
+    console.log("Server is running on localhost:3000");
 })
