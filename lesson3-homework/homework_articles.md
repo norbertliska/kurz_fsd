@@ -8,6 +8,7 @@
 ### HTTP 200
 ```
 {
+    id: 12345,
     publicationDatetime:"2023-01-01T10:20:30"
     author: {
         id: 3,
@@ -188,8 +189,8 @@ Ako "GET /articles?page=3&perPage=25"
 ## POST /articles/filter
 - Zoznam článkov podľa **advanced filtra**
 - Na všetky podmienky sa aplikuje logické AND
-- **authorId**: konktrétne authorId. Ak je undefined alebo 0 alebo "0" -> ignore sa
 - **authorIds**: zoznam autorov.. Ak je undefined alebo null -> ignore sa
+- **categoryIds**: zoznam kategorii.. Ak je undefined alebo null -> ignore sa
 - **titleContains**: Titulok obsahuje... Ak je undefined alebo null alebo "" -> ignoruje sa
 - **contentContains**: Content obsahuje... Ak je undefined alebo null alebo  "" -> ignoruje sa
 - **tags**: Ak undefined alebo null alebo length = 0 -> ignoruje sa. Ak je ich v poli viac, tak clanok musi obsahovat aspon jeden z nich
@@ -199,9 +200,7 @@ Ako "GET /articles?page=3&perPage=25"
 
 ```
 {
-    [optional] authorId:int,
     [optional] authorIds:int[], // trochu uletené, ale budiš
-    [optional] categoryId: int,
     [optional] categoryIds: int[],
     [optional] titleContains: string,
     [optional] contentContains: string, // search celý content
@@ -231,14 +230,8 @@ Ako "GET /articles?page=3&perPage=25"s
 
 - Zmazanie článku
 
-### HTTP 201
-
-### HTTP 404
-```
-{
-    error: "ARTICLE_NOT_FOUND"
-    message: "Article {id} was not found."
-}
+### HTTP 200
+Dohoda, ze ak aj uz v DB neexistuje, tak nebudeme stresovat s errorom
 
 
 
