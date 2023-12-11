@@ -82,6 +82,7 @@ alebo
 ```
 [
     {
+        id: 12345,
         publicationDatetime:"2023-01-01T10:20:30"
         author: {
             id: 3,
