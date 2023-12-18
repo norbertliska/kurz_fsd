@@ -1,0 +1,85 @@
+@url = http://127.0.0.1:3000
+
+
+### test ci zije
+GET {{url}}
+
+
+### login and create JWT
+POST {{url}}/login
+Content-Type: application/json
+
+{
+    "username":"user3",
+    "password":"pwd3"
+}
+
+
+### saved token
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywidXNlcm5hbWUiOiJ1c2VyMyIsImlhdCI6MTcwMjg4NDIzNCwiZXhwIjoxNzAyOTIwMjM0fQ.bTZ6aWxIQTwZ2SpUryICgm1dzktGxksl6ofygmhekaQ
+
+
+### upload molekuly.jpg, moze sa opakovat
+POST {{url}}/upload
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=boundary986B3B10-653F-4C11-AC94-A690BA1139C6
+
+--boundary986B3B10-653F-4C11-AC94-A690BA1139C6
+Content-Disposition: form-data; name="image"; filename="molekuly.jpg"
+Content-Type: image/jpeg
+
+< ./images/molekuly.jpg
+--boundary986B3B10-653F-4C11-AC94-A690BA1139C6--
+
+
+### upload image vyssi ako 1000px - batman.jpg
+POST {{url}}/upload
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=boundary986B3B10-653F-4C11-AC94-A690BA1139C6
+
+--boundary986B3B10-653F-4C11-AC94-A690BA1139C6
+Content-Disposition: form-data; name="image"; filename="batman.jpg"
+Content-Type: image/jpeg
+
+< ./images/batman.jpg
+--boundary986B3B10-653F-4C11-AC94-A690BA1139C6--
+
+
+### upload image sirsi ako 1000px - bugatti.jpg
+POST {{url}}/upload
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=boundary986B3B10-653F-4C11-AC94-A690BA1139C6
+
+--boundary986B3B10-653F-4C11-AC94-A690BA1139C6
+Content-Disposition: form-data; name="image"; filename="bugatti.jpg"
+Content-Type: image/jpeg
+
+< ./images/bugatti.jpg
+--boundary986B3B10-653F-4C11-AC94-A690BA1139C6--
+
+
+### Upload suboru s diakritikou (encodeURIComponent)
+POST {{url}}/upload
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=boundary986B3B10-653F-4C11-AC94-A690BA1139C6
+
+--boundary986B3B10-653F-4C11-AC94-A690BA1139C6
+Content-Disposition: form-data; name="image"; filename*=UTF-8''Na%20ve%C4%8Dn%C3%A9%20%C4%8Dasy.jpg
+Content-Type: image/jpeg
+
+< ./images/Na večné časy.jpg
+--boundary986B3B10-653F-4C11-AC94-A690BA1139C6--
+
+
+
+### upload GIF opar.gif
+POST {{url}}/upload
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=boundary986B3B10-653F-4C11-AC94-A690BA1139C6
+
+--boundary986B3B10-653F-4C11-AC94-A690BA1139C6
+Content-Disposition: form-data; name="image"; filename="opar.gif"
+Content-Type: image/jpeg
+
+< ./images/opar.gif
+--boundary986B3B10-653F-4C11-AC94-A690BA1139C6--
