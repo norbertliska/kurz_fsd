@@ -1,6 +1,6 @@
-const fs = require('fs')
+import * as fs from 'fs'
 import removeAccents from 'remove-accents';
-const sharp = require('sharp');
+import sharp from 'sharp';
 
 export class ImageRepositoryService {
     private IMAGE_MAX_SIZE:number = 1000;
@@ -40,7 +40,9 @@ export class ImageRepositoryService {
         this.createDirIfNotExists(this.getDirPathForUser(userId));
     }
 
-    /** Povolene au len a-z, A-Z, 0-9, "-", "." a "_": Vsetky ostatne znaky sa nahradia za "_" */
+    /** Povolene au len a-z, A-Z, 0-9, "-", "." a "_": Vsetky ostatne znaky sa nahradia za "_" 
+     * #todo ak prilis dlhe - odseknut
+    */
     private normaliseFilename(fn: string):string {
         fn = removeAccents(fn);
         const validChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.";
@@ -54,41 +56,54 @@ export class ImageRepositoryService {
     }
 
     /**
+     * @returns null if ok , otherwise errmsg
+     */
+    private checkMimetypeAndExtension(mimetype:string, extension: string): string {
+
+        // primitivna kontrola podla mime-type
+        if (mimetype === void 0 
+           || mimetype === null
+           || this.imagesMT.indexOf(mimetype.toLowerCase()) < 0 )
+        {
+            return `Mime-Type "${mimetype}" nevyzerá byť obrázok.`;
+        }
+
+        // primitivna kontrola. Chcelo by to cez sharp, ale neviem odchytit chybu...
+        if (extension === void 0
+            || extension === null
+            ||this.imagesExt.indexOf(extension.toLowerCase()) < 0 ) 
+        {
+            return `Súbor s príponov "${extension}" nevyzerá byť obrázok.`;         
+        }
+
+        return null;
+    }
+
+    /**
      * Ak je väčší ako IMAGE_MAX_SIZE, tak príslušne resizne (dodrží aspect ratio)
      * Urobí thumbnail o veľkosti THUMBNAIL_SIZE (dodrží aspect ratio)
      * @returns { error?:string; path?:string; thumbnailPath?:string } 
      */
     async saveImage(fileName:string, mimetype:string, userId:number, tempFilePath:string )
-    : Promise<{ error?:string;path?: string; thumbnailPath?:string; }>
+    : Promise<{ error?:string; path?:string; thumbnailPath?:string; }>
      {
         // pripava
         fileName = this.normaliseFilename(fileName);
         this.ensureExistsUserDir(userId);
         var dir = this.getDirPathForUser(userId);
 
-        // priprava na "hugo(2).jpg", "hugo(3).jpg", "hugo(4).jpg" ...
+        // priprava na "hugo2.jpg", "hugo3.jpg", "hugo4.jpg" ...
         var pureFileName = fileName, extension = ""; // "hugo.jpg" -> "hugo", "jpg"
         {
             var i = fileName.lastIndexOf(".");
-            if (i >= 0){
+            if (i >= 0) {
                 pureFileName = fileName.substring(0, i);
                 extension = fileName.substring(i + 1);
             }
         }
 
-        // primitivna kontrola. Chcelo by to cez sharp, ale neviem odchytit chybu...
-        if (this.imagesExt.indexOf(extension.toLowerCase()) < 0 ){
-            return {
-                error: `Súbor s príponov "${extension}" nevyzerá byť obrázok.`
-            }
-        }
-
-        // druha primitivna kontrola podla mime-type
-        if (this.imagesMT.indexOf(mimetype.toLowerCase()) < 0 ){
-            return {
-                error: `Mime-Type "${mimetype}" nevyzerá byť obrázok.`
-            }
-        }
+        var errmsg = this.checkMimetypeAndExtension(mimetype, extension);
+        if (errmsg !== null) return { error: errmsg };
 
         // skutocne meno suboru aj nahladu
         var savePath = `${dir}${fileName}`;
@@ -96,8 +111,8 @@ export class ImageRepositoryService {
         var counter = 1;
         while (fs.existsSync(savePath)) {
             counter++; // čiže začíname od 2-ky!
-            savePath = `${dir}${pureFileName}(${counter})`; // "...../hugo.jpg" -> "...../hugo(2).jpg"
-            tnPath = `${dir}_${pureFileName}(${counter})`;
+            savePath = `${dir}${pureFileName}${counter}`; // "...../hugo.jpg" -> "...../hugo2.jpg"
+            tnPath = `${dir}_${pureFileName}${counter}`; //  "...../hugo.jpg" -> "...../_hugo2.jpg"
             if (extension !== "") {
                 savePath += "." + extension;
                 tnPath += "." + extension;
@@ -105,22 +120,15 @@ export class ImageRepositoryService {
         }        
         await fs.copyFile(tempFilePath, savePath, fs.constants.COPYFILE_EXCL, (err:any) => { });
                 
-        // zistenie rozmerov
+        // zistenie rozmerov        
         const objSharp = sharp(tempFilePath);
-        const md = await objSharp.metadata();
-        let sharpWidth = <number>md.width;        
-        let sharpHeight = <number>md.height;
+        const md = await objSharp.metadata(); // tu by to chcelo odchytit chybu, ale nic nezabralo...
+        const imageWidth = <number>md.width;   
+        const imageHeight = <number>md.height;
 
-        if (sharpHeight > this.IMAGE_MAX_SIZE || sharpWidth > this.IMAGE_MAX_SIZE) {            
-            let zoom = this.IMAGE_MAX_SIZE / sharpHeight; // na vysku
-            if (sharpWidth > sharpHeight) zoom = this.IMAGE_MAX_SIZE / sharpWidth; // na sirku
-
-            sharpWidth = Math.floor(sharpWidth * zoom); // zmeneny rozmer - bude treba pri thumbnaili
-            sharpHeight = Math.floor(sharpHeight * zoom);
-
-            // tu by to chcelo odchytit chybu, ale nic nezabralo...
+        if (imageHeight > this.IMAGE_MAX_SIZE || imageWidth > this.IMAGE_MAX_SIZE) {            
             objSharp
-                .resize(sharpWidth, sharpHeight )
+                .resize(this.IMAGE_MAX_SIZE, this.IMAGE_MAX_SIZE, {fit: sharp.fit.inside} )
                 .toFile(savePath);
         }
         else {
@@ -129,19 +137,14 @@ export class ImageRepositoryService {
         }
 
         // urob thumbnail
-        let tnZoom = this.THUMBNAIL_SIZE / sharpHeight; // na vysku
-        if (sharpWidth > sharpHeight) tnZoom = this.THUMBNAIL_SIZE / sharpWidth; // na sirku
-        
-        // tu by to chcelo odchytit chybu, ale nic nezabralo...
         objSharp
-            .resize(Math.floor(sharpWidth * tnZoom), Math.floor(sharpHeight * tnZoom))
+            .resize(this.THUMBNAIL_SIZE, this.THUMBNAIL_SIZE, {fit: sharp.fit.inside})
             .toFile(tnPath);
 
         return {
             path: savePath,
             thumbnailPath: tnPath
-        }
-        
+        }        
     }
 
 

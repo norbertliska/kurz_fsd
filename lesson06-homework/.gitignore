@@ -1,3 +1,5 @@
 node_modules/
+tmp/
 .env
 internal_notes.odt
+diskusia.txt

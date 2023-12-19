@@ -16,7 +16,7 @@ Content-Type: application/json
 
 
 ### saved token
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywidXNlcm5hbWUiOiJ1c2VyMyIsImlhdCI6MTcwMjg4NDIzNCwiZXhwIjoxNzAyOTIwMjM0fQ.bTZ6aWxIQTwZ2SpUryICgm1dzktGxksl6ofygmhekaQ
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywidXNlcm5hbWUiOiJ1c2VyMyIsImlhdCI6MTcwMjk3MjMzNywiZXhwIjoxNzAyOTc1OTM3fQ.9WF1J6IjE6982p52Fyu_h4QHofS-JjfOATB6iq9gMIU
 
 
 ### upload molekuly.jpg, moze sa opakovat

@@ -1,8 +1,8 @@
 import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
-const jwt = require("jsonwebtoken")
-const bodyParser = require("body-parser")
-const fileUpload = require("express-fileupload")
+import { sign as jwt_sign, verify as jwt_verify } from "jsonwebtoken"
+import * as bodyParser from "body-parser"
+import fileUpload from "express-fileupload"
 
 import { userService }  from './UserService'
 import { ImageRepositoryService  } from './ImageRepositoryService'
@@ -12,7 +12,7 @@ const SECRET_KEY = "B9B46EAF-1839-40E6-95C6-9C2ED09F2D8D";
 const port = process.env.PORT ? parseInt(process.env.PORT) : 3000
 const host = process.env.HOST ?? "127.0.0.1"
 
-export interface IPayload {
+interface IPayload {
     id: number;
     username: string;
 }
@@ -49,7 +49,7 @@ app.post("/login", (req, res) => {
             id: u.id,
             username: u.username
         }            
-        const token = jwt.sign(payload, SECRET_KEY, {expiresIn: "1h"})
+        const token = jwt_sign(payload, SECRET_KEY, {expiresIn: "1h"})
         res.send({ id: u.id, token: token})
     }
     else {
@@ -81,7 +81,7 @@ const authMiddleware = (req:Request, res:Response, next:() => void):void => {
     if (parts[0].toLowerCase() !== "bearer")  { generError("Auth. header musí byť vo formáte \"Bearer<space><token>\""); return; }
     
     try {
-        const payload = <IPayload>jwt.verify(parts[1], SECRET_KEY);
+        const payload = <IPayload>jwt_verify(parts[1], SECRET_KEY);
         (<any>req).payload = payload; // TADAAA!!!
         next();    
     }
@@ -107,20 +107,28 @@ const authMiddleware = (req:Request, res:Response, next:() => void):void => {
 app.post("/upload", [authMiddleware], async (req:Request, res:Response) => {        
     const payload = <IPayload>((<any>req).payload);
 
-    const file:UploadedFile = <UploadedFile>(req.files.image);
+    let file:UploadedFile = null;
     
-    if (file === void 0 || file === null) {
-        res.statusCode = 412;
-
-        res.json({
-            error: "Nenasiel sa subor..."
-        });
+    try {
+        // ked je filename="" , tak aj pri puhom pozreti na  "req.files.image" hadze exception...
+        file = <UploadedFile>(req.files.image);   
+    }
+    catch(e) {
+        res.status(412);
+        res.json({ error: "Nenasiel sa subor... " });
         return;
-    }    
+    }
+
+    // ak je "name" != "image", tak je "req.files.image" undefined, ale hore nehodi exception...
+    if (req.files.image === void 0 || req.files.image === null) {
+        res.status(412);
+        res.json({ error: "Nenasiel sa subor..." });
+        return;
+    }     
   
     const info = await irs.saveImage(file.name, file.mimetype, payload.id,  file.tempFilePath );
     if (info.error) {
-        res.statusCode = 412;
+        res.status(412);
         res.json({
             error: info.error
         })
