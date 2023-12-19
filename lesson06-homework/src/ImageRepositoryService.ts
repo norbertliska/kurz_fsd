@@ -40,7 +40,7 @@ export class ImageRepositoryService {
         this.createDirIfNotExists(this.getDirPathForUser(userId));
     }
 
-    /** Povolene au len a-z, A-Z, 0-9, "-", "." a "_": Vsetky ostatne znaky sa nahradia za "_" 
+    /** Povolene au len a-z, A-Z, 0-9, "-", "." a "_": Vsetky ostatne znaky sa nahradia za podtrznik 
      * #todo ak prilis dlhe - odseknut
     */
     private normaliseFilename(fn: string):string {
@@ -80,47 +80,56 @@ export class ImageRepositoryService {
     }
 
     /**
-     * Ak je väčší ako IMAGE_MAX_SIZE, tak príslušne resizne (dodrží aspect ratio)
-     * Urobí thumbnail o veľkosti THUMBNAIL_SIZE (dodrží aspect ratio)
-     * @returns { error?:string; path?:string; thumbnailPath?:string } 
+     * "hugo.jpg" -> { name:"hugo", extension:"string"}
      */
-    async saveImage(fileName:string, mimetype:string, userId:number, tempFilePath:string )
-    : Promise<{ error?:string; path?:string; thumbnailPath?:string; }>
-     {
-        // pripava
-        fileName = this.normaliseFilename(fileName);
-        this.ensureExistsUserDir(userId);
-        var dir = this.getDirPathForUser(userId);
+    private parseFilename(filename:string): { pureName:string, extension:string} {
+        var pureName = filename, extension = "";        
+        var i = pureName.lastIndexOf(".");
+        if (i >= 0) {
+            pureName = filename.substring(0, i);
+            extension = filename.substring(i + 1);
+        }        
+        return { pureName:pureName, extension: extension};
+    }
 
-        // priprava na "hugo2.jpg", "hugo3.jpg", "hugo4.jpg" ...
-        var pureFileName = fileName, extension = ""; // "hugo.jpg" -> "hugo", "jpg"
-        {
-            var i = fileName.lastIndexOf(".");
-            if (i >= 0) {
-                pureFileName = fileName.substring(0, i);
-                extension = fileName.substring(i + 1);
-            }
-        }
 
-        var errmsg = this.checkMimetypeAndExtension(mimetype, extension);
-        if (errmsg !== null) return { error: errmsg };
+    /**
+     * 
+     * @param userId 
+     * @param name 
+     * @param extension 
+     * @param isThumbnail 
+     * @param counter : 0 -> ignore, >0 ->  <name><counter>.<extension>
+     */
+    private generRealPath(userId:number, name:string, extension:string, isThumbnail: boolean, counter:number) {
+        var ret = this.getDirPathForUser(userId) + name;
+        if (isThumbnail) ret += "_";
+        if (counter > 0) ret += counter.toString();
+        if (extension !== "") ret += "." + extension;   
+        return ret;
+    }
 
-        // skutocne meno suboru aj nahladu
-        var savePath = `${dir}${fileName}`;
-        var tnPath = `${dir}_${fileName}`;
+    private findUnusedRealPath(userId:number, name:string, extension:string) {
+        var savePath = this.generRealPath(userId, name, extension, false, 0);
+        var tnPath = this.generRealPath(userId, name, extension, true, 0);
         var counter = 1;
         while (fs.existsSync(savePath)) {
             counter++; // čiže začíname od 2-ky!
-            savePath = `${dir}${pureFileName}${counter}`; // "...../hugo.jpg" -> "...../hugo2.jpg"
-            tnPath = `${dir}_${pureFileName}${counter}`; //  "...../hugo.jpg" -> "...../_hugo2.jpg"
-            if (extension !== "") {
-                savePath += "." + extension;
-                tnPath += "." + extension;
-            }            
-        }        
-        await fs.copyFile(tempFilePath, savePath, fs.constants.COPYFILE_EXCL, (err:any) => { });
-                
-        // zistenie rozmerov        
+            savePath = this.generRealPath(userId, name, extension, false, counter );
+            tnPath = this.generRealPath(userId, name, extension, true, counter );
+        }  
+
+        return {
+            savePath: savePath,
+            tnPath: tnPath
+        }
+    }
+
+    /**
+     * Uz image len proste ulozi, resp zmensi na max IMAGE_MAX_SIZE
+     */
+    private async saveImageAndThumbnail(tempFilePath:string, savePath:string, tnPath: string) {
+        // zistenie rozmerov
         const objSharp = sharp(tempFilePath);
         const md = await objSharp.metadata(); // tu by to chcelo odchytit chybu, ale nic nezabralo...
         const imageWidth = <number>md.width;   
@@ -133,7 +142,7 @@ export class ImageRepositoryService {
         }
         else {
             // priamo kopiruj
-            await fs.copyFile(tempFilePath, savePath, fs.constants.COPYFILE_EXCL, (err:any) => { });
+            fs.copyFile(tempFilePath, savePath, fs.constants.COPYFILE_EXCL, (err: any) => { });
         }
 
         // urob thumbnail
@@ -145,6 +154,38 @@ export class ImageRepositoryService {
             path: savePath,
             thumbnailPath: tnPath
         }        
+
+    }
+    
+
+    /**
+     * Ak je väčší ako IMAGE_MAX_SIZE, tak príslušne resizne (dodrží aspect ratio)
+     * Urobí thumbnail o veľkosti THUMBNAIL_SIZE (dodrží aspect ratio)
+     * @returns { error?:string; path?:string; thumbnailPath?:string } 
+     */
+    async saveImage(fileName:string, mimetype:string, userId:number, tempFilePath:string )
+    : Promise<{ error?:string; path?:string; thumbnailPath?:string; }>
+     {
+        // priprava
+        fileName = this.normaliseFilename(fileName);
+        this.ensureExistsUserDir(userId);
+        const parsedFilename = this.parseFilename(fileName);
+
+        // base checks
+        const errmsg = this.checkMimetypeAndExtension(mimetype, parsedFilename.extension);
+        if (errmsg !== null) return { error: errmsg };
+
+        // skutocne meno suboru aj nahladu        
+        const { savePath, tnPath} = this.findUnusedRealPath(userId, parsedFilename.pureName, parsedFilename.extension);
+
+        // samotne ulozenie
+        this.saveImageAndThumbnail(tempFilePath, savePath, tnPath);
+
+        return {
+            path: savePath,
+            thumbnailPath: tnPath
+        }
+
     }
 
 

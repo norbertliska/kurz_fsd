@@ -30,7 +30,7 @@ app.use(express.static('public'))
 /**
  *  GET /
  */
-app.get('/', (_req: Request, res: Response) => {    
+app.get('/', (_req: Request, res: Response) => {
     res.send("Hello world!");
 });
 
