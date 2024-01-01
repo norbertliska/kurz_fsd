@@ -1,0 +1,7 @@
+Baumarkt Strasse/Nr.           PLZ     Ort 
+******** ********************  ******* *****************
+Bahr     Buxtehuder Straﬂe 62  D-21073 Hamburg - Harburg  
+Toom     Winsener Straﬂe 233   D-21077 Hamburg - Sinstorf  
+OBI      Groﬂmoordamm 98       D-21079 Hamburg - Harburg  
+Bauhaus  Groﬂmoorbogen 9       D-21079 Hamburg - Harburg  
+

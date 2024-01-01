@@ -1,0 +1,27 @@
+@url = http://localhost:3000
+
+
+### zoznam súborov
+GET {{url}}/files
+
+
+### upload
+POST {{url}}/files
+Content-Type: multipart/form-data; boundary=boundary986B3B10-653F-4C11-AC94-A690BA1139C6
+
+--boundary986B3B10-653F-4C11-AC94-A690BA1139C6
+Content-Disposition: form-data; name="file"; filename="mini_car.jpg"
+Content-Type: image/jpeg
+
+< ./test_files/mini_car.jpg
+--boundary986B3B10-653F-4C11-AC94-A690BA1139C6--
+
+
+### download 
+GET {{url}}/files/mini_car.jpg
+
+
+### DELETE file
+DELETE {{url}}/files/mini_car.jpg
+
+
