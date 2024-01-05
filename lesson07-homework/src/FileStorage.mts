@@ -1,10 +1,21 @@
 import { IFileInfo, IFileStorageDriver } from "./DriverFactory.mjs";
 
+
+/**
+ * Zatial 1:1 ako IFileStorageDriver, ale neskor moze dostat specificke fcie, preto extra
+ */
+export interface IFileStorage {
+    upload(filename: string, data: Uint8Array): Promise<void>;
+    download(filename: string): Promise<Uint8Array>;
+    delete(filename: string): Promise<void>;
+    list(): Promise<IFileInfo[]>;
+}
+
 /**
  * Zatial len nadbytocny wrapper na IFileStorageDriver a nic viac.
  * Ale keby trebalo, da sa spravit spolocna logika pred a po volaní IFileStorageDriver-funkcií
  */
-export class FileStorage {
+export class FileStorage implements IFileStorage {
 
     driver: IFileStorageDriver = null;
 

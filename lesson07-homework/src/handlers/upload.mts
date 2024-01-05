@@ -1,12 +1,11 @@
 import express, { Request, Response } from 'express';
 import fileUpload, { UploadedFile } from "express-fileupload"
 
-import { FileStorage } from "../FileStorage.mjs";
+import { IFileStorage } from "../FileStorage.mjs";
 
 /** 
  * Upload per multipart/form-data
  * 
- * @param {FileStorage} storage
  * [in] POST /files     (name musí byť "file")
  *      Content-Type: multipart/form-data; 
  *      ...
@@ -17,7 +16,7 @@ import { FileStorage } from "../FileStorage.mjs";
  * [out] HTTP 412 { error: string } 
  * @returns
  */
-export function createHandler(storage: FileStorage) {
+export function createHandler(storage: IFileStorage) {
     const router = express.Router()
 
     router.post("/", [fileUpload()], async (req: Request, res: Response) => {

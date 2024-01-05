@@ -6,8 +6,8 @@ import { FileStorage } from "./FileStorage.mjs";
 
 import { createHandler as createListHandler } from "./handlers/list.mjs"
 import { createHandler as createUploadHandler } from "./handlers/upload.mjs"
-import { handler as deleteHandler } from "./handlers/delete.mjs"
-import { handler as downloadHandler } from "./handlers/download.mjs"
+import { createHandler as createDeleteHandler } from "./handlers/delete.mjs"
+import { createHandler as createDownloadHandler } from "./handlers/download.mjs"
 
 dotenv.config();
 
@@ -43,15 +43,11 @@ app.get('/', async (_req: Request, res: Response) => {
 // upload
 app.use('/files', createUploadHandler(storage));
 
-// download: akoze zadavat meno v URL sa mi nie prilis pozdava, ale ako cvicenie hadam bude OK
-app.get("/files/:filename", async (req: Request, res: Response, next: () => void) => {
-    await downloadHandler(req, res, next, storage, req.params.filename)
-});
+// download
+app.use('/files', createDownloadHandler(storage));
 
 // delete
-app.use("/files/:filename", async (req: Request, res: Response, next: () => void) => {
-    await deleteHandler(req, res, next, storage, req.params.filename);
-});
+app.use('/files', createDeleteHandler(storage));
 
 // list
 app.use('/files', createListHandler(storage));

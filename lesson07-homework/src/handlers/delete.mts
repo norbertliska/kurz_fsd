@@ -1,21 +1,25 @@
-import { Request, Response } from 'express';
-import { FileStorage } from "../FileStorage.mjs";
+import express, { Request, Response } from 'express';
+import { IFileStorage } from "../FileStorage.mjs";
 
-export async function handler(
-    req: Request,
-    res: Response,
-    next: () => void,
-    storage: FileStorage,
-    fileName: string
-) {
-    try {
-        await storage.delete(fileName);
-        res.send("");
-    }
-    catch (e) {
-        res.status(412);
-        res.json({ error: e.toString() })
-    }
+/**
+ * akoze zadavat meno v URL sa mi nie prilis pozdava, ale ako cvicenie hadam bude OK
+ * [out] HTTP 200 <binary-content>
+ * [out] HTTP 412 { error: "..." }
+ */
+export function createHandler(storage: IFileStorage) {
+    const router = express.Router()
+
+    router.delete('/:filename', async (req: Request, res: Response) => {
+        try {
+            const filename = req.params.filename;
+            await storage.delete(filename);
+            res.send("");
+        }
+        catch (e) {
+            res.status(412);
+            res.json({ error: e.toString() })
+        }
+    });
+
+    return router
 }
-
-

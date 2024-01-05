@@ -1,11 +1,11 @@
 import express, { Request, Response } from 'express';
-import { FileStorage } from "../FileStorage.mjs";
+import { IFileStorage } from "../FileStorage.mjs";
 
 /** 
  * @param {FileStorage} storage
  * @returns
  */
-export function createHandler(storage: FileStorage) {
+export function createHandler(storage: IFileStorage) {
     const router = express.Router()
 
     router.get('/', async (_req: Request, res: Response) => {
