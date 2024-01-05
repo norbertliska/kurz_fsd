@@ -1,3 +1,15 @@
+/*
+
+IDB.ts
+KyselyDB
+KyselyDBTypes
+
+
+*/
+
+
+
+
 interface IDataStorage {
 
     //
@@ -5,7 +17,7 @@ interface IDataStorage {
     //
 
 	// 1/*: logne sa administrator, napr. user_id=1. Caller checkne ci nie je banned.
-	findUserByLoginAndPassword(login, pwd):IUser;
+	findUserByLoginAndPassword(login:string, pwd:string):IUser;
 
 	// 2/*: prida autora, napr author_id=100. JWT-user musi byt nezabanovany admin 
 	addAuthor(author:IAuthor):IAuthor;
@@ -17,7 +29,7 @@ interface IDataStorage {
 	// vid hore: findUserByLoginAndPassword(login, pwd):IUser;
 
     // 5/*: bez autorizacie, to len pre FE-dropbox
-    getCategororyAll():ICategory[];
+    getCategoryAll():ICategory[];
 
     // 6:/*: pridat article - JWT-user musi byt nezabanovany author
     addArticle(a:IArticle): IArticle;
