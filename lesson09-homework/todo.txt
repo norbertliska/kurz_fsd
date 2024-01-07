@@ -1,0 +1,53 @@
+
+user: find by login/pwd
+[x] DataStorageKysely
+[x] web     POST /login
+
+user: create
+[x] DataStorageKysely
+[-] web   
+
+author: create
+[x] DataStorageKysely
+[x] web  POST /authors
+
+authors: list
+[x] DataStorageKysely
+[x] web  GET /authors
+
+author: jeden
+[x] DataStorageKysely
+[x] web  GET /authors/:id
+
+author: update
+[x] DataStorageKysely
+[x] web  PATCH /authors
+
+author: delete
+[x] DataStorageKysely
+[x] web  DELETE /authors/:id
+
+article: create
+[x] DataStorageKysely
+[x] web  POST /articles
+
+article: read one
+[x] DataStorageKysely
+[x] web   GET /articles/:id
+
+article: list
+[x] DataStorageKysely
+[x] web  GET /articles?page=&perPage=&authorId=
+
+article: update (title, uvod,  content_plain, tags)
+[x] DataStorageKysely
+[x] web  PATCH /articles/:id
+
+article: delete
+[x] DataStorageKysely
+[x] api DELETE /articles/:id
+
+
+
+
+"category_id":"999", "title":"Nove BMW X5#2", "uvod":"Uz ste ho videli?#2", "content_plain":"content pre Nove BMW X5#2", "tags":["bmw","x5","new","#2"]

@@ -1,0 +1,129 @@
+@url = http://localhost:3000
+
+### zije?
+GET {{url}}
+
+
+### zoznam autorov
+GET {{url}}/authors
+
+
+### login ako administrator
+POST {{url}}/login
+Content-Type: application/json
+
+{
+    "username":"admin",
+    "password":"adminpwd"
+}
+
+
+### save token pre admina
+@tokenAdmin = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJhdXRob3JfaWQiOjAsImlzX2FkbWluIjp0cnVlLCJpYXQiOjE3MDQ2NTg4OTUsImV4cCI6MTcwNDY2MjQ5NX0.nvjPKNfk4ThdNo0Fl9VJXw5VfjpMdho5nAja0r5QWug
+
+
+### vytvorime noveho autora
+POST {{url}}/authors
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+    "name":"Jozko Ikarus",
+    "job":"sofer",
+    "login": "ji",
+    "password": "jipwd"
+}
+
+### ulozime si id noveho autora
+@authorId = 3
+
+
+### zobrazime noveho autora
+GET {{url}}/authors/{{authorId}}
+
+
+### logneme sa ako Jozko Ikarus
+POST {{url}}/login
+Content-Type: application/json
+
+{
+    "username":"ji",
+    "password":"jipwd"
+}
+
+
+### ulozime token noveho autora
+@tokenJI = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo0LCJhdXRob3JfaWQiOjMsImlzX2FkbWluIjpmYWxzZSwiaWF0IjoxNzA0NjU4OTQwLCJleHAiOjE3MDQ2NjI1NDB9.qLa4j3pWh63mjggJdzfTnp94uSysOSNsHyhMGBusqNk
+
+
+### updatneme autora, bud ako Jozko alebo ako admin
+PATCH {{url}}/authors/{{authorId}}
+Authorization: Bearer {{tokenJI}}
+Content-Type: application/json
+
+{ "id":"{{authorId}}", "job":"sofer#2", "name":"Jozko Ikarus#2" }
+
+
+### zobrazime zmeny
+GET {{url}}/authors/{{authorId}}
+
+
+### vytvorime novy articel ako Jozko Ikarus
+POST {{url}}/articles
+Authorization: Bearer {{tokenJI}}
+Content-Type: application/json
+
+{ "author_id":"{{authorId}}", "category_id":"2", "title":"Nove BMW X5", "uvod": "Uz ste ho videli?", "content_plain": "content pre Nove BMW X5", "tags":["bmw","x5","new"]}
+
+
+### ulozime si ID clanku
+@articleId = 9
+
+
+### nacitame vytvoreny clanok
+GET {{url}}/articles/{{articleId}}
+
+
+### updatneme clanok
+PATCH {{url}}/articles/{{articleId}}
+Authorization: Bearer {{tokenJI}}
+Content-Type: application/json
+
+{"category_id":"999", "title":"Nove BMW X5#2", "uvod":"Uz ste ho videli?#2", "content_plain":"content pre Nove BMW X5#2", "tags":["bmw","x5","new","#2"]}
+
+
+### nacitame updatnuty clanok
+GET {{url}}/articles/{{articleId}}
+
+
+### deletneme clanok
+DELETE {{url}}/articles/{{articleId}}
+Authorization: Bearer {{tokenJI}}
+
+
+### nacitame deletnuty clanok, ma hodit 404-ku
+GET {{url}}/articles/{{articleId}}
+
+
+### deletneme autora ako admin
+DELETE {{url}}/authors/{{authorId}}
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+
+### zobrazime deletnuteho autora, ma hodit 404-ku
+GET {{url}}/authors/{{authorId}}
+
+### zoznam clankov od najnovsich, bez autora. Ma vratit 8-7-6
+GET {{url}}/articles?page=1&perPage=3
+
+### zoznam clankov od najnovsich druha page, bez autora. Ma vratit 5-4-3
+GET {{url}}/articles?page=2&perPage=3
+
+
+### zoznam clankov od najnovsich, pre autoraId=1. Ma vratit 5-4-3
+GET {{url}}/articles?page=1&perPage=3&authorId=1
+
+
+### zoznam clankov od najnovsich, pre autoraId=1, druha page. Ma vratit 2-1
+GET {{url}}/articles?page=2&perPage=3&authorId=1
