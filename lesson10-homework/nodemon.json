@@ -1,0 +1,8 @@
+{
+    "watch":[
+        ".env",
+        "src/"
+    ],
+    "ext": "ts,mts,env"
+
+}
