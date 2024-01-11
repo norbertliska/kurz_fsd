@@ -10,33 +10,38 @@ const app = express();
 /**
  * trvá DB_LATENCY ms
  */
-async function simulDBTextContentLatency(url: string, ttl: number): Promise<string> {
+async function simulDBTextContentLatency(): Promise<string> {
     await new Promise(resolve => setTimeout(resolve, DB_LATENCY));
-    return `"${url}": Textovy content generovany o ${(new Date()).toLocaleTimeString("sk-SK")}, TTL=${ttl}`;
+    return `Nejaky textovy content..`;
 }
 
 /**
  * trvá DB_LATENCY ms
  */
-async function simulDBJsonContentLatency(url: string, ttl: number): Promise<object> {
+async function simulDBJsonContentLatency(): Promise<object> {
     await new Promise(resolve => setTimeout(resolve, DB_LATENCY));
     return {
-        url: url,
-        time: (new Date()).toLocaleTimeString("sk-SK"),
-        ttl: ttl
-    }
+        content: `Nejaky content..`
+    };
 }
 
 // jeden endpoint na testovanie textovaho contentu, TTL=10
 app.get("/text/:id", createCacheMiddleware(10), async (req: Request, res: Response) => {
-    res.send(await simulDBTextContentLatency(req.url, 10));
+    let text = await simulDBTextContentLatency();
+    text +=     
+        `<br>Generovany pre "${req.url}" o ${(new Date()).toLocaleTimeString("sk-SK")}` +
+        `<br>TTL=10}`;        
+    res.send(text);
 });
 
 // jeden endpoint na testovanie JSON contentu, TTL=15
 app.get("/json/:id", createCacheMiddleware(15), async (req: Request, res: Response) => {
-    res.send(await simulDBJsonContentLatency(req.url, 15));
+    let json:any = await simulDBJsonContentLatency();
+    json.url = req.url;
+    json.time = (new Date()).toLocaleTimeString("sk-SK");
+    json.ttl = 15;
+    res.send(json);
 });
-
 
 /**
  * http server
@@ -47,7 +52,4 @@ const host = process.env.HOST ?? "127.0.0.1"
 app.listen(port, host, () => {
     console.log(`Server listening on http://${host}:${port}`)
 })
-
-
-
 

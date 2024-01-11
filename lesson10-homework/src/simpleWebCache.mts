@@ -48,7 +48,7 @@ async function saveContent(key: string, content: any, ttl: number) {
 }
 
 
-// Inspiracia: 
+// Inspiracia: Trochu hacky, na PROD by este trebalo doriest kopec detailov.
 // https://stackoverflow.com/questions/19215042/express-logging-response-body
 // https://github.com/kwhitley/apicache/blob/master/src/apicache.js
 // https://www.npmjs.com/package/express?activeTab=code
