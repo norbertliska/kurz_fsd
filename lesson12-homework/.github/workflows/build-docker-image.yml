@@ -1,0 +1,23 @@
+name: Build Docker Image
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build the Docker image
+        run: |
+          docker build . --tag ghcr.io/norbertliska/lesson12-homework:build_${{ github.run_number }}
+          docker push ghcr.io/norbertliska/lesson12-homework:build_${{ github.run_number }}
